@@ -9,39 +9,46 @@
 #include <unordered_set>
 
 // Función para validar una entrada numérica entera
-int validarEntradaEntera() {
+int validarEntradaEntera() 
+{
     int valor;
     std::string entrada;
 
-    while (true) {
+    while (true) 
+    {
         std::cin >> entrada;
 
         // Verificar si la entrada contiene solo dígitos
         bool esNumero = true;
-        for (char c : entrada) {
-            if (!std::isdigit(c)) {
+        for (char c : entrada) 
+        {
+            if (!std::isdigit(c)) 
+            {
                 esNumero = false;
                 break;
             }
         }
 
-        if (!esNumero) {
+        if (!esNumero) 
+        {
             std::cout << "Entrada inválida. Intente nuevamente: ";
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        } else {
+        } else 
+        {
             std::stringstream ss(entrada);
-            if (!(ss >> valor)) {
+            if (!(ss >> valor)) 
+            {
                 std::cout << "Entrada inválida. Intente nuevamente: ";
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            } else {
+            } else 
+            {
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 break;
             }
         }
     }
-
     return valor;
 }
 
@@ -63,13 +70,153 @@ struct Village
 };
 
 // Función para buscar el índice de un guardián en el vector 'guardians'
-int guardianIndex(const std::vector<Guardian>& guardians, const std::string& guardianName) {
-    for (int i = 0; i < guardians.size(); i++) {
-        if (guardians[i].name == guardianName) {
+int guardianIndex(const std::vector<Guardian>& guardians, const std::string& guardianName) 
+{
+    for (int i = 0; i < guardians.size(); i++) 
+    {
+        if (guardians[i].name == guardianName) 
+        {
             return i;
         }
     }
     return -1; // Si no se encuentra el guardián, se devuelve -1
+}
+
+// Función para encontrar un guardián por nombre en el vector de guardianes
+int findGuardianByName(const std::vector<Guardian>& guardians, const std::string& name) 
+{
+    for (int i = 0; i < guardians.size(); i++) 
+    {
+        if (guardians[i].name == name) 
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Función para mostrar las aldeas disponibles y seleccionar la aldea para el nuevo aprendiz
+int selectVillage(const std::unordered_map<std::string, Village>& villages) 
+{
+    std::cout << "Aldeas disponibles:" << std::endl;
+    int index = 1;
+    for (const auto& pair : villages) 
+    {
+        std::cout << index << ". " << pair.second.name << std::endl;
+        index++;
+    }
+
+    int selectedVillageIndex = -1;
+
+    std::cout << "Ingrese el número de la aldea del nuevo aprendiz: ";
+    selectedVillageIndex = validarEntradaEntera();
+
+
+    return selectedVillageIndex - 1; // Adjust index to match vector indexing
+}
+
+
+void createGuardian(std::vector<Guardian>& guardians, const std::unordered_map<std::string, Village>& villages, Guardian& trainee)
+{
+    std::string newGuardianName;
+    bool exitLoop = false;
+
+    do 
+    {
+        std::cout << "Ingrese el nombre del nuevo aprendiz (o '2' para seleccionar uno existente): ";
+        std::getline(std::cin, newGuardianName);
+
+        if (newGuardianName == "2") 
+        {
+            break; // Exit the loop and go to option 2
+        }
+
+        int existingGuardianIndex = findGuardianByName(guardians, newGuardianName);
+
+        if (existingGuardianIndex != -1) 
+        {
+            std::cout << "El nombre ingresado ya existe. Por favor, ingrese un nombre diferente." << std::endl;
+            std::cout << "Puede seleccionar el guardián existente en la opción 2." << std::endl;
+        }
+        else 
+        {
+            // Crear aprendiz
+            Guardian newGuardian;
+            newGuardian.name = newGuardianName;
+            newGuardian.powerLevel = 50;
+
+            // Seleccionar la aldea
+            selectVillage(villages);
+
+            guardians.push_back(newGuardian);
+            trainee = newGuardian;
+            exitLoop = true;
+        }
+    } while (!exitLoop);
+}
+
+
+void selectGuardian(std::vector<Guardian>& guardians, std::unordered_map<std::string, Village>& villages, Guardian& trainee)
+{
+    std::vector<Guardian> availableGuardians;
+
+    // Agregar los guardianes disponibles (excepto Stormheart) al vector temporal
+    for (const Guardian& guardian : guardians) 
+    {
+        if (guardian.name != "Stormheart") 
+        {
+            availableGuardians.push_back(guardian);
+        }
+    }
+
+    std::cout << "Guardianes disponibles:" << std::endl;
+    for (int i = 0; i < availableGuardians.size(); i++) 
+    {
+        std::cout << i + 1 << ". " << availableGuardians[i].name << std::endl;
+    }
+
+    std::cout << "Ingrese el número del guardián que desea seleccionar: ";
+    int selectedGuardianIndex = validarEntradaEntera();
+
+    if (selectedGuardianIndex >= 1 && selectedGuardianIndex <= availableGuardians.size()) 
+    {
+        trainee = availableGuardians[selectedGuardianIndex - 1];
+        trainee.powerLevel = 50; // Establecer el powerLevel como 50
+        std::cout << "Se ha seleccionado el guardián: " << trainee.name << std::endl;
+
+        // Obtener el índice del guardián seleccionado en el vector original
+        int originalGuardianIndex = -1;
+        for (int i = 0; i < guardians.size(); i++) 
+        {
+            if (guardians[i].name == trainee.name) 
+            {
+                originalGuardianIndex = i;
+                break;
+            }
+        }
+
+        if (originalGuardianIndex != -1) 
+        {
+            // Modificar el nombre del guardián en la lista original por "Liz"
+            guardians[originalGuardianIndex].name = "Liz"; 
+
+            // Actualizar el nombre del maestro en los discípulos
+            for (Guardian& disciple : guardians) 
+            {
+                // Verificar si el discípulo tiene al maestro anterior
+                if (disciple.mainMaster == trainee.name) 
+                {
+                    // Establecer "Liz" como el nuevo maestro del discípulo
+                    disciple.mainMaster = "Liz";
+                }
+            }
+        }
+        
+    } 
+    else 
+    {
+        std::cout << "Número de guardián inválido. Intente nuevamente." << std::endl;
+    }
 }
 
 
@@ -78,7 +225,8 @@ int main()
 {
     std::vector<Guardian> guardians;
     std::unordered_map<std::string, Village> villages;
-
+    bool selectTrainee = false;
+    Guardian trainee;// Variable para almacenar al aprendiz
 
 #pragma  region Archivos //Carga de archivos de guardianes y aldeas
 
@@ -121,10 +269,11 @@ int main()
         std::getline(iss, guardian.mainMaster, ',');
         std::getline(iss, guardian.village);
 
-        guardians.push_back(guardian);
+        guardians.push_back(guardian); 
 
         // Actualizar el maestro de la aldea si el guardian tiene un powerLevel mayor
-        if (villages.find(guardian.village) != villages.end()) {
+        if (villages.find(guardian.village) != villages.end()) 
+        {
             Village& village = villages[guardian.village];
             if (village.master.empty() || guardian.powerLevel > guardians[guardianIndex(guardians, village.master)].powerLevel) {
                 village.master = guardian.name;
@@ -132,37 +281,43 @@ int main()
         }
     }
 
+    
+
     inputFile.close();
 
 #pragma endregion Archivos    
 
     // Imprimir los guardianes
-    for (const auto& guardian : guardians) 
+    std::cout << "----- Guardianes -----" << std::endl;
+    for (const Guardian& guardian : guardians) 
     {
-        std::cout << "Name: " << guardian.name << std::endl;
-        std::cout << "Power Level: " << guardian.powerLevel << std::endl;
-        std::cout << "Main Master: " << guardian.mainMaster << std::endl;
-        std::cout << "Village: " << guardian.village << std::endl;
+        std::cout << "Nombre: " << guardian.name << std::endl;
+        std::cout << "Nivel de poder: " << guardian.powerLevel << std::endl;
+        std::cout << "Maestro principal: " << guardian.mainMaster << std::endl;
+        std::cout << "Aldea: " << guardian.village << std::endl;
         std::cout << std::endl;
     }
 
     // Imprimir las aldeas y sus conexiones
-    for (const auto& pair : villages) {
+    std::cout << "----- Aldeas -----" << std::endl;
+    for (const auto& pair : villages) 
+    {
         const Village& village = pair.second;
-        std::cout << "Village: " << village.name << std::endl;
-        std::cout << "Connected Villages: ";
-        for (const std::string& connectedVillage : village.connectedVillages) {
+        std::cout << "Nombre: " << village.name << std::endl;
+        std::cout << "Aldeas conectadas: ";
+        for (const std::string& connectedVillage : village.connectedVillages) 
+        {
             std::cout << connectedVillage << " ";
         }
-        std::cout << std::endl;
-        std::cout << "Master: " << village.master << std::endl << std::endl;
+        std::cout << std::endl << std::endl;
     }
 
     int choice = 0;
     while (choice != 4) {
         std::cout << "----- Guardian's Journey -----" << std::endl;
+        if(selectTrainee){std::cout << trainee.name << std::endl;}
         std::cout << "1. Crear un nuevo aprendiz" << std::endl;
-        std::cout << "2. Seleccionar un aprendiz existente" << std::endl;
+        std::cout << "2. Seleccionar un guardian existente" << std::endl;
         std::cout << "3. Comenzar el viaje" << std::endl;
         std::cout << "4. Salir del juego" << std::endl;
         std::cout << "Ingrese su elección: ";
@@ -170,10 +325,39 @@ int main()
 
         switch (choice) {
             case 1:
-                // Lógica para crear un nuevo aprendiz
+                if (selectTrainee) 
+                {
+                    std::cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << std::endl;
+                    break; // No se puede crear otro
+                }
+                createGuardian(guardians, villages, trainee);
+                if(!trainee.name.empty())
+                {
+                    selectTrainee = true;
+                }
                 break;
             case 2:
-                // Lógica para seleccionar un aprendiz existente
+                if (selectTrainee) 
+                {
+                    std::cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << std::endl;
+                    break; // No se puede seleccionar otro
+                }
+                selectGuardian(guardians, villages, trainee);
+                if(!trainee.name.empty())
+                {
+                    selectTrainee = true;
+                }
+
+                // Imprimir los guardianes
+                std::cout << "----- Guardianes -----" << std::endl;
+                for (const Guardian& guardian : guardians) 
+                {
+                    std::cout << "Nombre: " << guardian.name << std::endl;
+                    std::cout << "Nivel de poder: " << guardian.powerLevel << std::endl;
+                    std::cout << "Maestro principal: " << guardian.mainMaster << std::endl;
+                    std::cout << "Aldea: " << guardian.village << std::endl;
+                    std::cout << std::endl;
+                }
                 break;
             case 3:
                 // Lógica para comenzar el viaje
