@@ -6,6 +6,7 @@
 #include <string>
 #include <limits>
 #include <cctype>
+#include <unordered_set>
 
 // Función para validar una entrada numérica entera
 int validarEntradaEntera() {
@@ -44,6 +45,8 @@ int validarEntradaEntera() {
     return valor;
 }
 
+
+// Estructura base de guardianes
 struct Guardian 
 {
     std::string name;
@@ -51,12 +54,25 @@ struct Guardian
     std::string mainMaster;
     std::string village;
 };
-
+// Estructura base de aldeas
 struct Village 
 {
     std::string name;
     std::vector<std::string> connectedVillages;
+    std::string master; // Maestro actual de la aldea
 };
+
+// Función para buscar el índice de un guardián en el vector 'guardians'
+int guardianIndex(const std::vector<Guardian>& guardians, const std::string& guardianName) {
+    for (int i = 0; i < guardians.size(); i++) {
+        if (guardians[i].name == guardianName) {
+            return i;
+        }
+    }
+    return -1; // Si no se encuentra el guardián, se devuelve -1
+}
+
+
 
 int main() 
 {
@@ -64,7 +80,7 @@ int main()
     std::unordered_map<std::string, Village> villages;
 
 
-#pragma  region Archivos
+#pragma  region Archivos //Carga de archivos de guardianes y aldeas
 
     std::ifstream inputFileVillages("./Archivos/villages.txt");
     if (!inputFileVillages) {
@@ -106,6 +122,14 @@ int main()
         std::getline(iss, guardian.village);
 
         guardians.push_back(guardian);
+
+        // Actualizar el maestro de la aldea si el guardian tiene un powerLevel mayor
+        if (villages.find(guardian.village) != villages.end()) {
+            Village& village = villages[guardian.village];
+            if (village.master.empty() || guardian.powerLevel > guardians[guardianIndex(guardians, village.master)].powerLevel) {
+                village.master = guardian.name;
+            }
+        }
     }
 
     inputFile.close();
@@ -130,7 +154,8 @@ int main()
         for (const std::string& connectedVillage : village.connectedVillages) {
             std::cout << connectedVillage << " ";
         }
-        std::cout << std::endl << std::endl;
+        std::cout << std::endl;
+        std::cout << "Master: " << village.master << std::endl << std::endl;
     }
 
     int choice = 0;

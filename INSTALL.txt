@@ -1,0 +1,35 @@
+Instrucciones de instalación y compilación
+
+1. Requisitos previos
+   - Asegúrate de tener instalado un compilador de C++ compatible, como g++.
+   - Verifica que tu sistema tenga las librerías y dependencias necesarias para compilar el programa.
+
+2. Descarga el código fuente
+   - Descarga el archivo fuente del programa desde el repositorio o la ubicación designada.
+
+3. Configuración del entorno
+   - Asegúrate de tener configurado correctamente tu entorno de desarrollo para compilar programas en C++.
+
+4. Compilación del programa
+   - Abre una terminal o línea de comandos en el directorio donde se encuentra el código fuente.
+   - Ejecuta el siguiente comando para compilar el programa:
+
+       g++ -o programa.exe archivo.cpp
+
+     Ejemplo: Si tu archivo fuente se llama "Proyecto.cpp" y estás utilizando MinGW, el comando sería:
+
+       C:\MinGW\bin\g++.exe -fdiagnostics-color=always -g Proyecto.cpp -o Proyecto.exe
+
+     Nota: Asegúrate de ajustar el comando según el nombre y la ubicación del archivo fuente.
+
+5. Ejecución del programa
+   - Después de compilar exitosamente, ejecuta el programa con el siguiente comando:
+
+       ./programa.exe
+
+     Nota: El nombre del programa ejecutable puede variar según el nombre que le hayas dado en el paso de compilación.
+
+6. Solución de problemas
+   - Si encuentras algún problema durante la instalación o compilación, consulta la documentación o el repositorio del programa para obtener ayuda adicional.
+
+¡Listo! Ahora deberías tener el programa instalado y listo para ejecutarse en tu sistema. Siéntete libre de personalizar estas instrucciones según las necesidades y características específicas de tu programa.
