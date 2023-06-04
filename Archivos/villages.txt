@@ -21,3 +21,7 @@ Tesla,Hill Village
 Tesla,Cliff Village
 Tesla,Island Village
 Tesla,Storm Village
+Cliff Village,Hill Village
+Island Village,Capital City
+Storm Village,Coast Village
+Capital City, Tesla
