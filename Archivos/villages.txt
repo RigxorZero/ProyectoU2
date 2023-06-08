@@ -1,15 +1,16 @@
 Village,ConnectedVillage
 Capital City,Forest Village
+Capital City,Tesla
 Forest Village,Mountain Village
 Mountain Village,Capital City
 Mountain Village,Desert Village
 Desert Village,Coast Village
 Coast Village,River Village
 River Village,Valley Village
+River Village,Storm Village
 Valley Village,Hill Village
 Hill Village,Cliff Village
 Hill Village,Island Village
-River Village,Storm Village
 Tesla,Capital City
 Tesla,Forest Village
 Tesla,Mountain Village
@@ -24,4 +25,3 @@ Tesla,Storm Village
 Cliff Village,Hill Village
 Island Village,Capital City
 Storm Village,Coast Village
-Capital City, Tesla

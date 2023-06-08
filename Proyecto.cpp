@@ -8,22 +8,25 @@
 #include <cctype>
 #include <unordered_set>
 #include <algorithm>
+#include <functional>
+
+using namespace std;
 
 // Función para validar una entrada numérica entera
 int validarEntradaEntera() 
 {
     int valor;
-    std::string entrada;
+    string entrada;
 
     while (true) 
     {
-        std::cin >> entrada;
+        cin >> entrada;
 
         // Verificar si la entrada contiene solo dígitos
         bool esNumero = true;
         for (char c : entrada) 
         {
-            if (!std::isdigit(c)) 
+            if (!isdigit(c)) 
             {
                 esNumero = false;
                 break;
@@ -32,20 +35,20 @@ int validarEntradaEntera()
 
         if (!esNumero) 
         {
-            std::cout << "Entrada inválida. Intente nuevamente: ";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Entrada inválida. Intente nuevamente: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else 
         {
-            std::stringstream ss(entrada);
+            stringstream ss(entrada);
             if (!(ss >> valor)) 
             {
-                std::cout << "Entrada inválida. Intente nuevamente: ";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cout << "Entrada inválida. Intente nuevamente: ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             } else 
             {
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 break;
             }
         }
@@ -56,29 +59,30 @@ int validarEntradaEntera()
 // Estructura base de guardianes
 struct Guardian 
 {
-    std::string name;
+    string name;
     int powerLevel;
-    std::string mainMaster;
-    std::string village;
+    string mainMaster;
+    string village;
 };
 
 // Estructura nodo guardianes
 struct GuardianNode
 {
     Guardian guardian;
-    std::vector<GuardianNode*> apprentices;
+    vector<GuardianNode*> apprentices;
 };
 
 // Estructura base de aldeas
 struct Village 
 {
-    std::string name;
-    std::vector<std::string> connectedVillages;
-    std::string master; // Maestro actual de la aldea
+    string name;
+    vector<string> connectedVillages;
+    string master; // Maestro actual de la aldea
+    vector<Guardian> localApprentices;
 };
 
 // Función para buscar el índice de un guardián en el vector 'guardians'
-int guardianIndex(const std::vector<Guardian>& guardians, const std::string& guardianName) 
+int guardianIndex(const vector<Guardian>& guardians, const string& guardianName) 
 {
     for (int i = 0; i < guardians.size(); i++) 
     {
@@ -91,7 +95,7 @@ int guardianIndex(const std::vector<Guardian>& guardians, const std::string& gua
 }
 
 // Función para encontrar un guardián por nombre en el vector de guardianes
-int findGuardianByName(const std::vector<Guardian>& guardians, const std::string& name) 
+int findGuardianByName(const vector<Guardian>& guardians, const string& name) 
 {
     for (int i = 0; i < guardians.size(); i++) 
     {
@@ -104,19 +108,19 @@ int findGuardianByName(const std::vector<Guardian>& guardians, const std::string
 }
 
 // Función para mostrar las aldeas disponibles y seleccionar la aldea para el nuevo aprendiz
-int selectVillage(const std::unordered_map<std::string, Village>& villages) 
+int selectVillage(const unordered_map<string, Village>& villages) 
 {
-    std::cout << "Aldeas disponibles:" << std::endl;
+    cout << "Aldeas disponibles:" << endl;
     int index = 1;
     for (const auto& pair : villages) 
     {
-        std::cout << index << ". " << pair.second.name << std::endl;
+        cout << index << ". " << pair.second.name << endl;
         index++;
     }
 
     int selectedVillageIndex = -1;
 
-    std::cout << "Ingrese el número de la aldea del nuevo aprendiz: ";
+    cout << "Ingrese el número de la aldea del nuevo aprendiz: ";
     selectedVillageIndex = validarEntradaEntera();
 
 
@@ -124,15 +128,15 @@ int selectVillage(const std::unordered_map<std::string, Village>& villages)
 }
 
 // Función para crear a un aprendiz
-void createGuardian(std::vector<Guardian>& guardians, const std::unordered_map<std::string, Village>& villages, Guardian& trainee)
+void createGuardian(vector<Guardian>& guardians, const unordered_map<string, Village>& villages, Guardian& trainee)
 {
-    std::string newGuardianName;
+    string newGuardianName;
     bool exitLoop = false;
 
     do 
     {
-        std::cout << "Ingrese el nombre del nuevo aprendiz (o '2' para seleccionar uno existente): ";
-        std::getline(std::cin, newGuardianName);
+        cout << "Ingrese el nombre del nuevo aprendiz (o '2' para seleccionar uno existente): ";
+        getline(cin, newGuardianName);
 
         if (newGuardianName == "2") 
         {
@@ -143,8 +147,8 @@ void createGuardian(std::vector<Guardian>& guardians, const std::unordered_map<s
 
         if (existingGuardianIndex != -1) 
         {
-            std::cout << "El nombre ingresado ya existe. Por favor, ingrese un nombre diferente." << std::endl;
-            std::cout << "Puede seleccionar el guardián existente en la opción 2." << std::endl;
+            cout << "El nombre ingresado ya existe. Por favor, ingrese un nombre diferente." << endl;
+            cout << "Puede seleccionar el guardián existente en la opción 2." << endl;
         }
         else 
         {
@@ -158,12 +162,12 @@ void createGuardian(std::vector<Guardian>& guardians, const std::unordered_map<s
             if (villageIndex >= 0 && villageIndex < villages.size())
             {
                 auto it = villages.begin();
-                std::advance(it, villageIndex);
+                advance(it, villageIndex);
                 newGuardian.village = it->second.name;
             }
             else
             {
-                std::cout << "Índice de aldea inválido. No se asignará aldea al aprendiz." << std::endl;
+                cout << "Índice de aldea inválido. No se asignará aldea al aprendiz." << endl;
             }
 
             trainee = newGuardian;
@@ -175,7 +179,7 @@ void createGuardian(std::vector<Guardian>& guardians, const std::unordered_map<s
 }
 
 // Obtiene la lista de guardianes disponibles
-void getAvailableGuardians(GuardianNode* node, std::vector<Guardian>& availableGuardians)
+void getAvailableGuardians(GuardianNode* node, vector<Guardian>& availableGuardians)
 {
     if (node != nullptr)
     {
@@ -194,7 +198,7 @@ void getAvailableGuardians(GuardianNode* node, std::vector<Guardian>& availableG
 }
 
 // Actualiza la relación maestro aprendiz
-void updateHierarchy(GuardianNode* node, const std::string& oldMaster, const std::string& newMaster)
+void updateHierarchy(GuardianNode* node, const string& oldMaster, const string& newMaster)
 {
     if (node != nullptr)
     {
@@ -213,27 +217,27 @@ void updateHierarchy(GuardianNode* node, const std::string& oldMaster, const std
 }
 
 // Seleccionar guardian de la lista inicial
-void selectGuardian(GuardianNode* root, Guardian& trainee, std::vector<Guardian>& guardians)
+void selectGuardian(GuardianNode* root, Guardian& trainee, vector<Guardian>& guardians, unordered_map<string, Village>& villages)
 {
-    std::vector<Guardian> availableGuardians;
+    vector<Guardian> availableGuardians;
 
     // Obtener los guardianes disponibles (excepto Stormheart) del árbol de jerarquía
     getAvailableGuardians(root, availableGuardians);
 
-    std::cout << "Guardianes disponibles:" << std::endl;
+    cout << "Guardianes disponibles:" << endl;
     for (int i = 0; i < availableGuardians.size(); i++) 
     {
-        std::cout << i + 1 << ". " << availableGuardians[i].name << std::endl;
+        cout << i + 1 << ". " << availableGuardians[i].name << endl;
     }
 
-    std::cout << "Ingrese el número del guardián que desea seleccionar: ";
+    cout << "Ingrese el número del guardián que desea seleccionar: ";
     int selectedGuardianIndex = validarEntradaEntera();
 
     if (selectedGuardianIndex >= 1 && selectedGuardianIndex <= availableGuardians.size()) 
     {
         trainee = availableGuardians[selectedGuardianIndex - 1];
         trainee.powerLevel = 50; // Establecer el powerLevel como 50
-        std::cout << "Se ha seleccionado el guardián: " << trainee.name << std::endl;
+        cout << "Se ha seleccionado el guardián: " << trainee.name << endl;
 
         // Obtener el índice del guardián seleccionado en el vector original
         int originalGuardianIndex = -1;
@@ -251,6 +255,34 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, std::vector<Guardian>
             // Modificar el nombre del guardián en la lista original por "Liz"
             guardians[originalGuardianIndex].name = "Liz"; 
 
+            // Obtener el nombre de la aldea a la que pertenecía el guardián seleccionado
+            string villageName = guardians[originalGuardianIndex].village;
+
+            // Verificar si la aldea existe en el mapa de aldeas
+            if (villages.find(villageName) != villages.end()) 
+            {
+                // Obtener una referencia a la aldea correspondiente
+                Village& village = villages[villageName];
+
+                // Buscar al guardián seleccionado en la lista de aprendices de la aldea
+                for (Guardian& apprentice : village.localApprentices) 
+                {
+                    if (apprentice.name == trainee.name) 
+                    {
+                        // Actualizar el nombre del guardián en la lista de aprendices
+                        apprentice.name = "Liz";
+                        break;
+                    }
+                }
+                
+                // Verificar si el guardián seleccionado es el maestro de la aldea
+                if (village.master == trainee.name) 
+                {
+                    // Actualizar el nombre del maestro en la aldea
+                    village.master = "Liz";
+                }
+            }
+
             // Actualizar el nombre del maestro en los discípulos
             for (Guardian& disciple : guardians) 
             {
@@ -261,6 +293,7 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, std::vector<Guardian>
                     disciple.mainMaster = "Liz";
                 }
             }
+
         }
 
         // Actualizar la jerarquía de niveles del árbol
@@ -268,12 +301,13 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, std::vector<Guardian>
     } 
     else 
     {
-        std::cout << "Número de guardián inválido. Intente nuevamente." << std::endl;
+        cout << "Número de guardián inválido. Intente nuevamente." << endl;
     }
 }
 
+
 // Buscar nodo
-GuardianNode* findNode(GuardianNode* currentNode, const std::string& guardianName)
+GuardianNode* findNode(GuardianNode* currentNode, const string& guardianName)
 {
     if (currentNode->guardian.name == guardianName)
     {
@@ -295,7 +329,7 @@ GuardianNode* findNode(GuardianNode* currentNode, const std::string& guardianNam
 }
 
 // Crea la relación
-void buildHierarchy(std::vector<Guardian>& guardians, GuardianNode* root)
+void buildHierarchy(vector<Guardian>& guardians, GuardianNode* root)
 {
     for (const Guardian& guardian : guardians)
     {
@@ -326,7 +360,7 @@ void printHierarchy(const GuardianNode* node, int indent = 0)
 {
     if (node != nullptr)
     {
-        std::cout << std::string(indent, ' ') << "- " << node->guardian.name << std::endl;
+        cout << string(indent, ' ') << "- " << node->guardian.name << " (" << node->guardian.village << ")"<< endl;
 
         for (const GuardianNode* apprentice : node->apprentices)
         {
@@ -348,112 +382,178 @@ void deleteTree(GuardianNode* node)
     }
 }
 
-void travel(const std::string& origin, const std::string& destination, const std::unordered_map<std::string, Village>& villages) 
+void travel(const string& origin, const string& destination, const unordered_map<string, Village>& villages) 
 {
+    cout << "Viaje solicitado desde " << origin << " a " << destination << endl;
+
     if (villages.count(origin) > 0 && villages.count(destination) > 0) 
     {
         const Village& originVillage = villages.at(origin);
         const Village& destinationVillage = villages.at(destination);
 
         // Verificar si las aldeas están conectadas
-        if (std::find(originVillage.connectedVillages.begin(), originVillage.connectedVillages.end(), destination) != originVillage.connectedVillages.end()) 
+        if (find(originVillage.connectedVillages.begin(), originVillage.connectedVillages.end(), destination) != originVillage.connectedVillages.end()) 
         {
             // Realizar el viaje
-            std::cout << "Viaje exitoso desde " << origin << " a " << destination << std::endl;
+            cout << "Viaje exitoso desde " << origin << " a " << destination << endl;
 
             // Aquí puedes implementar la lógica adicional para el viaje, como el entrenamiento aleatorio del aprendiz.
         } 
         else 
         {
-            std::cout << "Las aldeas no están conectadas. No se puede realizar el viaje." << std::endl;
+            cout << "Las aldeas no están conectadas. No se puede realizar el viaje." << endl;
         }
     } 
     else 
     {
-        std::cout << "Aldea de origen o aldea de destino no válidas." << std::endl;
+        cout << "Aldea de origen o aldea de destino no válidas." << endl;
     }
 }
+
 
 // Menú de viaje
-void travelMenu(const std::unordered_map<std::string, Village>& villages, const Guardian& trainee) 
+void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, GuardianNode* root)
 {
-    std::cout << "----- Viaje del Aprendiz -----" << std::endl;
-    std::cout << "Aldea actual: " << trainee.village << std::endl;
-    std::string origin = trainee.village;
+    cout << "----- Viaje del Aprendiz -----" << endl;
+    string origin = trainee.village;
+    // Mostrar el maestro y sus aprendices
+    Village& oVillage = villages.at(origin);
+    GuardianNode* masterNode = findNode(root, oVillage.master);
+     cout << masterNode->guardian.name << endl;
 
-    while (true) 
+    int choice = 0;
+    while (choice != 3)
     {
-        if (villages.count(origin) > 0) 
+        cout << trainee.name << " - " << trainee.powerLevel << endl;
+        cout << "Aldea actual: " << origin << endl << endl;
+        
+        cout << "1. Viajar a otra aldea" << endl;
+        cout << "2. Ver lista de adversarios para entrenar" << endl;
+        cout << "3. Volver al menú principal" << endl;
+        cout << "Ingrese su elección: ";
+        choice = validarEntradaEntera();
+
+        switch (choice)
         {
-            const Village& originVillage = villages.at(origin);
-
-            std::cout << "Aldeas a las que se puede viajar desde " << origin << ":" << std::endl;
-            for (const std::string& connectedVillage : originVillage.connectedVillages) 
+        case 1:
+            if (villages.count(origin) > 0)
             {
-                std::cout << "- " << connectedVillage << std::endl;
-            }
+                const Village& originVillage = villages.at(origin);
 
-            if (originVillage.connectedVillages.empty()) 
-            {
-                std::cout << "No hay aldeas a las que se pueda viajar desde " << origin << std::endl;
-                break; // Salir del ciclo while
-            } 
-            else 
-            {
-                std::cout << "Ingrese el nombre de la aldea de destino ('0' para salir): ";
-                std::string destination;
-                std::getline(std::cin, destination);
-
-                if (destination == "0") 
+                cout << "Aldeas a las que se puede viajar desde " << origin << ":" << endl;
+                for (const string& connectedVillage : originVillage.connectedVillages)
                 {
-                    break; // Salir del ciclo while
+                    cout << "- " << connectedVillage << endl;
                 }
 
-                if (villages.count(destination) > 0) 
+                if (originVillage.connectedVillages.empty())
                 {
-                    travel(origin, destination, villages);
-                    origin = destination; // Actualizar la aldea de origen para futuros viajes
-                } 
-                else 
+                    cout << "No hay aldeas a las que se pueda viajar desde " << origin << endl;
+                    break; // Salir del switch
+                }
+                else
                 {
-                    std::cout << "Aldea de destino no válida." << std::endl;
+                    string destination;
+                    do
+                    {
+                        cout << "Ingrese el nombre de la aldea de destino ('0' para volver al menú): ";
+                        getline(cin, destination);
+
+                        if (destination == "0")
+                        {
+                            break; // Salir del do-while y del switch
+                        }
+
+                        if (villages.count(destination) > 0)
+                        {
+                            travel(origin, destination, villages);
+                            trainee.powerLevel+=1;
+                            origin = destination; // Actualizar la aldea de origen para futuros viajes
+
+                            // Actualizar la referencia a la aldea actual
+                            oVillage = villages.at(origin);
+                            masterNode = findNode(root, oVillage.master);
+                            break; // Salir del do-while
+                        }
+                        else
+                        {
+                            cout << "Aldea de destino no válida. Intente nuevamente." << endl;
+                        }
+                    } while (true);
                 }
             }
-        } 
-        else 
-        {
-            std::cout << "Aldea de origen no válida." << std::endl;
-            break; // Salir del ciclo while
+            else
+            {
+                cout << "Aldea de origen no válida." << endl;
+                break; // Salir del switch
+            }
+
+            break;
+        case 2:
+            // Lista de adversarios para entrenar en la aldea actual
+            cout << "Lista de adversarios para entrenar en " << origin << ":" << endl;
+            
+            if (masterNode != nullptr)
+            {
+                cout << "Maestro: " << masterNode->guardian.name << " - " << masterNode->guardian.powerLevel << endl;
+                cout << "Aprendices:" << endl;
+                for (Guardian apprentice : oVillage.localApprentices) {
+                    if (apprentice.name != oVillage.master) { // Excluir al maestro de la lista
+                        cout << "- " << apprentice.name << " - " << apprentice.powerLevel << endl;
+                    }
+                }
+            }
+            else
+            {
+                cout << "No se encontró al maestro y sus aprendices en la jerarquía." << endl;
+                break;
+            }
+            // ...
+            break;
+        case 3:
+            cout << "Volviendo al menú principal." << endl;
+            break;
+        default:
+            cout << "Elección inválida. Intente nuevamente." << endl;
+            break;
         }
+        cout << endl;
     }
 }
+
+// Función comparadora para ordenar guardianes por powerLevel de forma descendente
+bool compareGuardiansByPowerLevel(const Guardian& a, const Guardian& b)
+{
+    return a.powerLevel > b.powerLevel;
+}
+
 
 
 
 int main() 
 {
     GuardianNode* root = new GuardianNode{}; // Crear el nodo raíz vacío
-    std::vector<Guardian> guardians;
-    std::unordered_map<std::string, Village> villages;
+    vector<Guardian> guardians;
+    unordered_map<string, Village> villages;
     bool selectTrainee = false;
     Guardian trainee;// Variable para almacenar al aprendiz
 
 #pragma  region Archivos //Carga de archivos de guardianes y aldeas
 
-    std::ifstream inputFileVillages("./Archivos/villages.txt");
+    ifstream inputFileVillages("./Archivos/villages.txt");
     if (!inputFileVillages) {
-        std::cout << "No se pudo abrir el archivo." << std::endl;
+        cout << "No se pudo abrir el archivo." << endl;
         return 1;
     }
 
-    std::string line;
-    std::getline(inputFileVillages, line); // Leer y descartar la primera línea de encabezado
-    while (std::getline(inputFileVillages, line)) 
+    string line;
+    getline(inputFileVillages, line); // Leer y descartar la primera línea de encabezado
+    while (getline(inputFileVillages, line)) 
     {
-        std::istringstream iss(line);
-        std::string villageName, connectedVillage;
-        std::getline(iss, villageName, ',');
-        std::getline(iss, connectedVillage);
+        istringstream iss(line);
+        string villageName, connectedVillage;
+        getline(iss, villageName, ',');
+        getline(iss, connectedVillage);
 
         villages[villageName].name = villageName;
         villages[villageName].connectedVillages.push_back(connectedVillage);
@@ -461,24 +561,24 @@ int main()
 
     inputFileVillages.close();
 
-    std::ifstream inputFile("./Archivos/guardians.txt");
+    ifstream inputFile("./Archivos/guardians.txt");
     if (!inputFile) 
     {
-        std::cout << "No se pudo abrir el archivo." << std::endl;
+        cout << "No se pudo abrir el archivo." << endl;
         return 1;
     }
 
-    std::string lineG;
-    while (std::getline(inputFile, lineG)) 
+    string lineG;
+    while (getline(inputFile, lineG)) 
     {
         Guardian guardian;
 
-        std::istringstream iss(lineG);
-        std::getline(iss, guardian.name, ',');
+        istringstream iss(lineG);
+        getline(iss, guardian.name, ',');
         iss >> guardian.powerLevel;
         iss.ignore();
-        std::getline(iss, guardian.mainMaster, ',');
-        std::getline(iss, guardian.village);
+        getline(iss, guardian.mainMaster, ',');
+        getline(iss, guardian.village);
 
         guardians.push_back(guardian); 
 
@@ -489,6 +589,11 @@ int main()
             if (village.master.empty() || guardian.powerLevel > guardians[guardianIndex(guardians, village.master)].powerLevel) {
                 village.master = guardian.name;
             }
+            
+            village.localApprentices.push_back(guardian); // Agregar el aprendiz a la lista
+
+            // Ordenar a los aprendices según su powerLevel
+            sort(village.localApprentices.begin(), village.localApprentices.end(), compareGuardiansByPowerLevel);
         }
     }
 
@@ -500,20 +605,20 @@ int main()
 
     int choice = 0;
     while (choice != 4) {
-        std::cout << "----- Guardian's Journey -----" << std::endl;
-        if(selectTrainee){std::cout << trainee.name << std::endl;}
-        std::cout << "1. Crear un nuevo aprendiz" << std::endl;
-        std::cout << "2. Seleccionar un guardian existente" << std::endl;
-        std::cout << "3. Comenzar el viaje" << std::endl;
-        std::cout << "4. Salir del juego" << std::endl;
-        std::cout << "Ingrese su elección: ";
+        cout << "----- Guardian's Journey -----" << endl;
+        if(selectTrainee){cout << trainee.name << endl;}
+        cout << "1. Crear un nuevo aprendiz" << endl;
+        cout << "2. Seleccionar un guardian existente" << endl;
+        cout << "3. Comenzar el viaje" << endl;
+        cout << "4. Salir del juego" << endl;
+        cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
 
         switch (choice) {
             case 1:
                 if (selectTrainee) 
                 {
-                    std::cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << std::endl;
+                    cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << endl;
                     break; // No se puede crear otro
                 }
                 createGuardian(guardians, villages, trainee);
@@ -525,10 +630,10 @@ int main()
             case 2:
                 if (selectTrainee) 
                 {
-                    std::cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << std::endl;
+                    cout << "Ya se seleccionó un guardián. Complete la aventura para crear uno nuevo." << endl;
                     break; // No se puede seleccionar otro
                 }
-                selectGuardian(root, trainee, guardians);
+                selectGuardian(root, trainee, guardians, villages);
                 if(!trainee.name.empty())
                 {
                     selectTrainee = true;
@@ -537,26 +642,26 @@ int main()
             case 3:
                 if (villages.empty()) 
                 {
-                    std::cout << "No hay aldeas cargadas. Cargue aldeas desde el archivo antes de realizar un viaje." << std::endl;
+                    cout << "No hay aldeas cargadas. Cargue aldeas desde el archivo antes de realizar un viaje." << endl;
                     break;
                 }
                 if (trainee.name.empty()) 
                 {
-                    std::cout << "No se ha seleccionado un guardián. Seleccione un guardián antes de realizar un viaje." << std::endl;
+                    cout << "No se ha seleccionado un guardián. Seleccione un guardián antes de realizar un viaje." << endl;
                     break;
                 }
-                travelMenu(villages, trainee);
+                travelMenu(villages, trainee, root);
                 break;
             case 4:
-                std::cout << "Gracias por jugar. ¡Hasta luego!" << std::endl;
+                cout << "Gracias por jugar. ¡Hasta luego!" << endl;
                 deleteTree(root);
                 break;
             default:
-                std::cout << "Elección inválida. Intente nuevamente." << std::endl;
+                cout << "Elección inválida. Intente nuevamente." << endl;
                 break;
         }
 
-        std::cout << std::endl;
+        cout << endl;
     }
 
     return 0;
