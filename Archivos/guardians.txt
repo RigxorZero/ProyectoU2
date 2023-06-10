@@ -31,3 +31,4 @@ Vivian,88,Luther,Cliff Village
 Ophelia,82,Merlin,Hill Village
 Felix,84,Sylvia,Valley Village
 Ideafix,90,Kai,Storm Village
+Pavitr,80,Selene,River Village

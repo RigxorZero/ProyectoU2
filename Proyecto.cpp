@@ -9,8 +9,18 @@
 #include <unordered_set>
 #include <algorithm>
 #include <functional>
+#include <random>
 
 using namespace std;
+
+// Función para generar un número aleatorio entre 1 y 20 (dado de 20 caras)
+int rollDice() 
+{
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(1, 20);
+    return dis(gen);
+}
 
 // Función para validar una entrada numérica entera
 int validarEntradaEntera() 
@@ -79,6 +89,13 @@ struct Village
     vector<string> connectedVillages;
     string master; // Maestro actual de la aldea
     vector<Guardian> localApprentices;
+
+    Village() {} // Constructor predeterminado sin argumentos
+
+    Village(const string& villageName) // Constructor que acepta un nombre de aldea
+    {
+        name = villageName;
+    }
 };
 
 // Función para buscar el índice de un guardián en el vector 'guardians'
@@ -225,9 +242,9 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, vector<Guardian>& gua
     getAvailableGuardians(root, availableGuardians);
 
     cout << "Guardianes disponibles:" << endl;
-    for (int i = 0; i < availableGuardians.size(); i++) 
+    for (int i = 1; i < availableGuardians.size(); i++) 
     {
-        cout << i + 1 << ". " << availableGuardians[i].name << endl;
+        cout << i << ". " << availableGuardians[i].name << endl;
     }
 
     cout << "Ingrese el número del guardián que desea seleccionar: ";
@@ -235,7 +252,7 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, vector<Guardian>& gua
 
     if (selectedGuardianIndex >= 1 && selectedGuardianIndex <= availableGuardians.size()) 
     {
-        trainee = availableGuardians[selectedGuardianIndex - 1];
+        trainee = availableGuardians[selectedGuardianIndex];
         trainee.powerLevel = 50; // Establecer el powerLevel como 50
         cout << "Se ha seleccionado el guardián: " << trainee.name << endl;
 
@@ -305,7 +322,6 @@ void selectGuardian(GuardianNode* root, Guardian& trainee, vector<Guardian>& gua
     }
 }
 
-
 // Buscar nodo
 GuardianNode* findNode(GuardianNode* currentNode, const string& guardianName)
 {
@@ -360,7 +376,10 @@ void printHierarchy(const GuardianNode* node, int indent = 0)
 {
     if (node != nullptr)
     {
-        cout << string(indent, ' ') << "- " << node->guardian.name << " (" << node->guardian.village << ")"<< endl;
+        if (!node->guardian.name.empty()) 
+        {
+            cout << string(indent, ' ') << "- " << node->guardian.name << " (" << node->guardian.village << ")" << endl;
+        }
 
         for (const GuardianNode* apprentice : node->apprentices)
         {
@@ -382,9 +401,43 @@ void deleteTree(GuardianNode* node)
     }
 }
 
+bool training(Guardian& trainee, const Guardian& adversary, int title)
+{
+    cout << "El entrenamiento será de " << trainee.name << " VS " << adversary.name << endl;
+    const int powerMax = 100;
+    const int rangeLowerLimit = -5; // Modificar el límite inferior del rango
+    const int rangeUpperLimit = 5;  // Modificar el límite superior del rango
+
+    // Calcula la diferencia de poder entre el personaje y el adversario
+    int powerDifference = adversary.powerLevel - trainee.powerLevel;
+
+    // Calcula la dificultad modificada para el entrenamiento
+    float adjustedDifference = static_cast<float>(powerDifference) / powerMax * (rangeUpperLimit - rangeLowerLimit);
+    int difficulty;
+    if (title == 1) {
+        difficulty = 10 + static_cast<int>(adjustedDifference) + (adversary.powerLevel == powerMax ? 5 : 0) - (powerMax - trainee.powerLevel) / 10;
+    } else {
+        difficulty = 5 + static_cast<int>(adjustedDifference) + (adversary.powerLevel == powerMax ? 5 : 0) - (powerMax - trainee.powerLevel) / 10;
+    }
+
+    // Genera el resultado del dado
+    int diceResult = rollDice(); // Reemplaza con tu función de generación de números aleatorios
+
+    // Compara el resultado del dado con la dificultad para determinar el éxito o fracaso
+    bool isSuccess = (diceResult > difficulty);
+
+    // Imprime el resultado
+    cout << "Resultado del dado: " << diceResult << endl;
+    cout << "Dificultad del entrenamiento: " << difficulty << endl;
+    return isSuccess;
+}
+
+
+
+
+
 void travel(const string& origin, const string& destination, const unordered_map<string, Village>& villages) 
 {
-    cout << "Viaje solicitado desde " << origin << " a " << destination << endl;
 
     if (villages.count(origin) > 0 && villages.count(destination) > 0) 
     {
@@ -396,8 +449,6 @@ void travel(const string& origin, const string& destination, const unordered_map
         {
             // Realizar el viaje
             cout << "Viaje exitoso desde " << origin << " a " << destination << endl;
-
-            // Aquí puedes implementar la lógica adicional para el viaje, como el entrenamiento aleatorio del aprendiz.
         } 
         else 
         {
@@ -410,37 +461,34 @@ void travel(const string& origin, const string& destination, const unordered_map
     }
 }
 
-
-// Menú de viaje
 void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, GuardianNode* root)
 {
     cout << "----- Viaje del Aprendiz -----" << endl;
     string origin = trainee.village;
     // Mostrar el maestro y sus aprendices
-    Village& oVillage = villages.at(origin);
-    GuardianNode* masterNode = findNode(root, oVillage.master);
-     cout << masterNode->guardian.name << endl;
-
+    Village* oVillagePtr = &villages.at(origin);
+    GuardianNode* masterNode = findNode(root, oVillagePtr->master);
+    cout << masterNode->guardian.name << endl;
+    int villagesPoints = 0; // Inicializar con 0 puntos
     int choice = 0;
+    bool resultTraining;
     while (choice != 3)
     {
         cout << trainee.name << " - " << trainee.powerLevel << endl;
         cout << "Aldea actual: " << origin << endl << endl;
-        
         cout << "1. Viajar a otra aldea" << endl;
         cout << "2. Ver lista de adversarios para entrenar" << endl;
         cout << "3. Volver al menú principal" << endl;
         cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
-
         switch (choice)
         {
         case 1:
             if (villages.count(origin) > 0)
-            {
-                const Village& originVillage = villages.at(origin);
-
-                cout << "Aldeas a las que se puede viajar desde " << origin << ":" << endl;
+            {   
+                Village& originVillage = *oVillagePtr;
+                cout << "originVillage: " << originVillage.name << endl;
+                cout << "Aldeas a las que se puede viajar desde " << originVillage.name << ":" << endl;
                 for (const string& connectedVillage : originVillage.connectedVillages)
                 {
                     cout << "- " << connectedVillage << endl;
@@ -467,12 +515,11 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                         if (villages.count(destination) > 0)
                         {
                             travel(origin, destination, villages);
-                            trainee.powerLevel+=1;
+                            trainee.powerLevel += 1;
+                            villagesPoints = 1; // Reiniciar villagesPoints a 1 (se obtiene 1 punto por viajar)
                             origin = destination; // Actualizar la aldea de origen para futuros viajes
-
-                            // Actualizar la referencia a la aldea actual
-                            oVillage = villages.at(origin);
-                            masterNode = findNode(root, oVillage.master);
+                            oVillagePtr = &villages.at(origin); // Actualizar el puntero oVillagePtr
+                            masterNode = findNode(root, oVillagePtr->master);
                             break; // Salir del do-while
                         }
                         else
@@ -487,19 +534,91 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                 cout << "Aldea de origen no válida." << endl;
                 break; // Salir del switch
             }
-
             break;
         case 2:
             // Lista de adversarios para entrenar en la aldea actual
             cout << "Lista de adversarios para entrenar en " << origin << ":" << endl;
-            
+
             if (masterNode != nullptr)
             {
-                cout << "Maestro: " << masterNode->guardian.name << " - " << masterNode->guardian.powerLevel << endl;
+                cout << "1. Maestro: " << masterNode->guardian.name << " - " << masterNode->guardian.powerLevel << endl;
                 cout << "Aprendices:" << endl;
-                for (Guardian apprentice : oVillage.localApprentices) {
-                    if (apprentice.name != oVillage.master) { // Excluir al maestro de la lista
-                        cout << "- " << apprentice.name << " - " << apprentice.powerLevel << endl;
+
+                // Buscar el aprendiz con el puntaje más bajo
+                Guardian lowestScoringApprentice;
+                bool firstApprentice = true;
+                // Enumerar a los aprendices
+                int apprenticeNumber = 2;
+                for (const Guardian& apprentice : oVillagePtr->localApprentices)
+                {
+                    if (apprentice.name != oVillagePtr->master) // Excluir al maestro de la lista
+                    {
+                        cout << apprenticeNumber << ". " << apprentice.name << " - " << apprentice.powerLevel << endl;
+                        apprenticeNumber++;
+                        if (firstApprentice || apprentice.powerLevel < lowestScoringApprentice.powerLevel)
+                        {
+                            lowestScoringApprentice = apprentice;
+                            firstApprentice = false;
+                        }
+                    }
+                }
+                // Etiquetar al último aprendiz como recomendado
+                if (!firstApprentice)
+                {
+                    cout << "Recomendado: " << lowestScoringApprentice.name << " - " << lowestScoringApprentice.powerLevel << endl;
+                }
+
+                int choiceAd = -10;
+                while (choiceAd < 0 || choiceAd >= apprenticeNumber)
+                {
+                    cout << "Seleccione el número del adversario contra el que desea pelear ('0' para volver al menú): ";
+                    choiceAd = validarEntradaEntera();
+                }
+                
+                if(choiceAd == 0)
+                {
+                    break;
+                }
+                else if (choiceAd == 1)
+                {
+                    // El usuario eligió pelear contra el maestro
+                    bool resultTraining = training(trainee, masterNode->guardian, 1);
+                    if (resultTraining)
+                    {
+                        
+                        if (villagesPoints <= 2)
+                        {   
+                            villagesPoints = min(villagesPoints + 2, 4); // Incrementar villagesPoints (máximo 4)
+                            trainee.powerLevel += 2;
+                        }
+                        else if (villagesPoints > 2 && villagesPoints < 4)
+                        {
+                            villagesPoints = min(villagesPoints + 1, 4); // Incrementar villagesPoints (máximo 4)
+                            trainee.powerLevel += 1;
+                        }
+                        
+                    } else
+                    {
+                        cout << "Entrenamiento no superado" << endl;
+                    }
+                    
+                    
+                }
+                else
+                {
+                    // El usuario eligió pelear contra un aprendiz
+                    const Guardian& selectedApprentice = oVillagePtr->localApprentices[choiceAd - 2];
+                    resultTraining = training(trainee, selectedApprentice, 2);
+                    if (resultTraining)
+                    {
+                        if (villagesPoints < 4)
+                        {
+                            villagesPoints = min(villagesPoints + 1, 4); // Incrementar villagesPoints (máximo 4)
+                            trainee.powerLevel += 1;
+                        } 
+                    } else
+                    {
+                        cout << "Entrenamiento no superado" << endl;
                     }
                 }
             }
@@ -508,7 +627,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                 cout << "No se encontró al maestro y sus aprendices en la jerarquía." << endl;
                 break;
             }
-            // ...
+            
             break;
         case 3:
             cout << "Volviendo al menú principal." << endl;
@@ -517,18 +636,18 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             cout << "Elección inválida. Intente nuevamente." << endl;
             break;
         }
+        cout << "Puntos ganados en la aldea actual: " << villagesPoints << endl;
         cout << endl;
     }
 }
+
+
 
 // Función comparadora para ordenar guardianes por powerLevel de forma descendente
 bool compareGuardiansByPowerLevel(const Guardian& a, const Guardian& b)
 {
     return a.powerLevel > b.powerLevel;
 }
-
-
-
 
 int main() 
 {
@@ -555,11 +674,23 @@ int main()
         getline(iss, villageName, ',');
         getline(iss, connectedVillage);
 
-        villages[villageName].name = villageName;
+         // Verificar si las aldeas ya existen en el mapa
+        if (villages.count(villageName) == 0) {
+            villages[villageName] = Village(villageName);
+        }
+        if (villages.count(connectedVillage) == 0) {
+            villages[connectedVillage] = Village(connectedVillage);
+        }
+
+        // Establecer conexión desde villageName a connectedVillage
         villages[villageName].connectedVillages.push_back(connectedVillage);
+
+        // Establecer conexión desde connectedVillage a villageName
+        villages[connectedVillage].connectedVillages.push_back(villageName);
     }
 
     inputFileVillages.close();
+
 
     ifstream inputFile("./Archivos/guardians.txt");
     if (!inputFile) 
@@ -569,39 +700,83 @@ int main()
     }
 
     string lineG;
+
     while (getline(inputFile, lineG)) 
     {
-        Guardian guardian;
+    Guardian guardian;
+    istringstream iss(lineG);
+    getline(iss, guardian.name, ',');
+    iss >> guardian.powerLevel;
+    iss.ignore();
+    getline(iss, guardian.mainMaster, ',');
+    getline(iss, guardian.village);
 
-        istringstream iss(lineG);
-        getline(iss, guardian.name, ',');
-        iss >> guardian.powerLevel;
-        iss.ignore();
-        getline(iss, guardian.mainMaster, ',');
-        getline(iss, guardian.village);
+    // Verificar el powerLevel del guardián
+    if (guardian.powerLevel <= 100) 
+    {
+            guardians.push_back(guardian);
 
-        guardians.push_back(guardian); 
+            // Actualizar el maestro de la aldea si el guardian tiene un powerLevel mayor
+            if (villages.find(guardian.village) != villages.end()) 
+            {
+                Village& village = villages[guardian.village];
+                if (village.master.empty() || guardian.powerLevel > guardians[guardianIndex(guardians, village.master)].powerLevel) 
+                {
+                    village.master = guardian.name;
+                }
+                
+                village.localApprentices.push_back(guardian); // Agregar el aprendiz a la lista
 
-        // Actualizar el maestro de la aldea si el guardian tiene un powerLevel mayor
-        if (villages.find(guardian.village) != villages.end()) 
-        {
-            Village& village = villages[guardian.village];
-            if (village.master.empty() || guardian.powerLevel > guardians[guardianIndex(guardians, village.master)].powerLevel) {
-                village.master = guardian.name;
+                // Ordenar a los aprendices según su powerLevel
+                sort(village.localApprentices.begin(), village.localApprentices.end(), compareGuardiansByPowerLevel);
             }
-            
-            village.localApprentices.push_back(guardian); // Agregar el aprendiz a la lista
-
-            // Ordenar a los aprendices según su powerLevel
-            sort(village.localApprentices.begin(), village.localApprentices.end(), compareGuardiansByPowerLevel);
+        }
+        else 
+        {
+            cout << "Guardián con nivel de poder superior a 100: " << guardian.name << " - Nivel de poder corregido a 100." << endl;
+            guardian.powerLevel = 100; // Corregir el nivel de poder a 100
+            guardians.push_back(guardian);
         }
     }
 
+
+
     inputFile.close();
+
+    for (auto& entry : villages) {
+        Village& village = entry.second;
+        string& master = village.master;
+        vector<Guardian>& apprentices = village.localApprentices;
+
+        // Verificar si la aldea es "Tesla"
+        if (village.name == "Tesla") {
+            continue; // Saltar la validación para la aldea "Tesla"
+        }
+
+        // Verificar si el maestro está presente en la lista de aprendices
+        auto it = find_if(apprentices.begin(), apprentices.end(), [&](const Guardian& guardian) {
+            return guardian.name == master;
+        });
+
+        // Si el maestro está en la lista, eliminarlo
+        if (it != apprentices.end()) {
+            apprentices.erase(it);
+        }
+
+        // Verificar si no hay aprendices restantes en la lista después de eliminar al maestro
+        if (apprentices.empty()) {
+            cout << "Error: La aldea " << village.name << " no tiene aprendices." << endl;
+            return 1;
+        }
+    }
+
+
+
 
 #pragma endregion Archivos    
 
     buildHierarchy(guardians, root);
+    printHierarchy(root);
 
     int choice = 0;
     while (choice != 4) {
@@ -663,7 +838,6 @@ int main()
 
         cout << endl;
     }
-
     return 0;
 }
 
