@@ -472,13 +472,19 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
     int villagesPoints = 0; // Inicializar con 0 puntos
     int choice = 0;
     bool resultTraining;
-    while (choice != 3)
+    cout << oVillagePtr->localApprentices.size() << endl;
+    vector<string> adversariesFaced; // Lista temporal para almacenar los adversarios ya enfrentados
+    while (choice != 9)
     {
+        if (villagesPoints == 4 || adversariesFaced.size() == oVillagePtr->localApprentices.size() + 1 /*Maestro incluido*/)
+        {
+            cout << "Actualmente no puedes reunir más puntos en esta aldea, se recomienda viajar a una nueva " << endl;
+        }
+        
         cout << trainee.name << " - " << trainee.powerLevel << endl;
         cout << "Aldea actual: " << origin << endl << endl;
         cout << "1. Viajar a otra aldea" << endl;
         cout << "2. Ver lista de adversarios para entrenar" << endl;
-        cout << "3. Volver al menú principal" << endl;
         cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
         switch (choice)
@@ -520,6 +526,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                             origin = destination; // Actualizar la aldea de origen para futuros viajes
                             oVillagePtr = &villages.at(origin); // Actualizar el puntero oVillagePtr
                             masterNode = findNode(root, oVillagePtr->master);
+                            adversariesFaced.clear();
                             break; // Salir del do-while
                         }
                         else
@@ -581,7 +588,15 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                 }
                 else if (choiceAd == 1)
                 {
+
                     // El usuario eligió pelear contra el maestro
+                    // Verificar si el maestro ya fue enfrentado previamente
+                    if (find(adversariesFaced.begin(), adversariesFaced.end(), masterNode->guardian.name) != adversariesFaced.end())
+                    {
+                        cout << "Ya has enfrentado al maestro anteriormente." << endl;
+                        break;
+                    }
+
                     bool resultTraining = training(trainee, masterNode->guardian, 1);
                     if (resultTraining)
                     {
@@ -590,24 +605,30 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                         {   
                             villagesPoints = min(villagesPoints + 2, 4); // Incrementar villagesPoints (máximo 4)
                             trainee.powerLevel += 2;
+                            adversariesFaced.push_back(masterNode->guardian.name); // Agregar el maestro a la lista de adversarios enfrentados
                         }
                         else if (villagesPoints > 2 && villagesPoints < 4)
                         {
                             villagesPoints = min(villagesPoints + 1, 4); // Incrementar villagesPoints (máximo 4)
                             trainee.powerLevel += 1;
+                            adversariesFaced.push_back(masterNode->guardian.name); // Agregar el maestro a la lista de adversarios enfrentados
                         }
-                        
                     } else
                     {
                         cout << "Entrenamiento no superado" << endl;
                     }
-                    
-                    
                 }
                 else
                 {
                     // El usuario eligió pelear contra un aprendiz
                     const Guardian& selectedApprentice = oVillagePtr->localApprentices[choiceAd - 2];
+                    // Verificar si el aprendiz ya fue enfrentado previamente
+                    if (find(adversariesFaced.begin(), adversariesFaced.end(), selectedApprentice.name) != adversariesFaced.end())
+                    {
+                        cout << "Ya has enfrentado a este aprendiz anteriormente." << endl;
+                        break;
+                    }
+
                     resultTraining = training(trainee, selectedApprentice, 2);
                     if (resultTraining)
                     {
@@ -615,22 +636,19 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                         {
                             villagesPoints = min(villagesPoints + 1, 4); // Incrementar villagesPoints (máximo 4)
                             trainee.powerLevel += 1;
+                            adversariesFaced.push_back(selectedApprentice.name); // Agregar el aprendiz a la lista de adversarios enfrentados
                         } 
                     } else
                     {
                         cout << "Entrenamiento no superado" << endl;
-                    }
+                    }      
                 }
             }
             else
             {
                 cout << "No se encontró al maestro y sus aprendices en la jerarquía." << endl;
                 break;
-            }
-            
-            break;
-        case 3:
-            cout << "Volviendo al menú principal." << endl;
+            }    
             break;
         default:
             cout << "Elección inválida. Intente nuevamente." << endl;
