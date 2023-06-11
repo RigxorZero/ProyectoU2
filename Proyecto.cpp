@@ -403,6 +403,19 @@ void deleteTree(GuardianNode* node)
     }
 }
 
+bool hasVisitedAllVillages(const unordered_map<string, Village>& villages)
+{
+    for (const auto& pair : villages)
+    {
+        const Village& village = pair.second;
+        if (!village.visited)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool training(Guardian& trainee, const Guardian& adversary, int title)
 {
     cout << "El entrenamiento será de " << trainee.name << " VS " << adversary.name << endl;
@@ -470,7 +483,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
     int choice = 0;
     bool resultTraining;
     vector<string> adversariesFaced; // Lista temporal para almacenar los adversarios ya enfrentados
-    bool condition =  true;
+    bool condition;
 
     cout << "----- Viaje del Aprendiz -----" << endl;
     while (choice != 9)
@@ -552,21 +565,14 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
 
             if (oVillagePtr->name == "Tesla")
             {
-                if(trainee.powerLevel <= 90)
+                if (trainee.powerLevel >= 90 || hasVisitedAllVillages(villages))
                 {
-                    cout << "No tienes el poder suficiente, aún no estas preparado para este desafio" << endl;
+                    cout << "Estás preparado para este desafío." << endl;
+                    condition = true;
+                } else
+                {
+                    cout << "No tienes el poder suficiente o no has visitado todas las aldeas. Aún no estás preparado para este desafío." << endl;
                     condition = false;
-                    break;
-                }
-                for(const auto& pair : villages)
-                {
-                    const Village& village = pair.second;
-                    if (!village.completed && trainee.powerLevel <= 90)
-                    {
-                        cout << "No has visitado todas las aldeas, aún no estas preparado para este desafio" << endl;
-                        condition = false;
-                        break;
-                    }    
                 }
             }
             
@@ -574,7 +580,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             {
                 break; // Detener el case 2 si no se cumple la condición
             }
-            
+
             // Lista de adversarios para entrenar en la aldea actual
             cout << "Lista de adversarios para entrenar en " << origin << ":" << endl;
 
