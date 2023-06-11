@@ -924,9 +924,9 @@ int main()
     getline(iss, guardian.mainMaster, ',');
     getline(iss, guardian.village);
 
-    // Verificar el powerLevel del guardián
-    if (guardian.powerLevel <= 100) 
-    {
+        // Verificar el powerLevel del guardián
+        if (guardian.powerLevel <= 100) 
+        {
             guardians.push_back(guardian);
 
             // Actualizar el maestro de la aldea si el guardian tiene un powerLevel mayor
