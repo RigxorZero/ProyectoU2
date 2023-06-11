@@ -89,6 +89,8 @@ struct Village
     vector<string> connectedVillages;
     string master; // Maestro actual de la aldea
     vector<Guardian> localApprentices;
+    bool visited;
+    bool completed = false;
 
     Village() {} // Constructor predeterminado sin argumentos
 
@@ -432,10 +434,6 @@ bool training(Guardian& trainee, const Guardian& adversary, int title)
     return isSuccess;
 }
 
-
-
-
-
 void travel(const string& origin, const string& destination, const unordered_map<string, Village>& villages) 
 {
 
@@ -463,22 +461,24 @@ void travel(const string& origin, const string& destination, const unordered_map
 
 void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, GuardianNode* root)
 {
-    cout << "----- Viaje del Aprendiz -----" << endl;
+    
     string origin = trainee.village;
-    // Mostrar el maestro y sus aprendices
     Village* oVillagePtr = &villages.at(origin);
+    oVillagePtr->visited = true;
     GuardianNode* masterNode = findNode(root, oVillagePtr->master);
-    cout << masterNode->guardian.name << endl;
     int villagesPoints = 0; // Inicializar con 0 puntos
     int choice = 0;
     bool resultTraining;
-    cout << oVillagePtr->localApprentices.size() << endl;
     vector<string> adversariesFaced; // Lista temporal para almacenar los adversarios ya enfrentados
+    bool condition =  true;
+
+    cout << "----- Viaje del Aprendiz -----" << endl;
     while (choice != 9)
     {
         if (villagesPoints == 4 || adversariesFaced.size() == oVillagePtr->localApprentices.size() + 1 /*Maestro incluido*/)
         {
             cout << "Actualmente no puedes reunir más puntos en esta aldea, se recomienda viajar a una nueva " << endl;
+            oVillagePtr->completed = true;
         }
         
         cout << trainee.name << " - " << trainee.powerLevel << endl;
@@ -525,6 +525,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                             villagesPoints = 1; // Reiniciar villagesPoints a 1 (se obtiene 1 punto por viajar)
                             origin = destination; // Actualizar la aldea de origen para futuros viajes
                             oVillagePtr = &villages.at(origin); // Actualizar el puntero oVillagePtr
+                            oVillagePtr->visited = true;
                             masterNode = findNode(root, oVillagePtr->master);
                             adversariesFaced.clear();
                             break; // Salir del do-while
@@ -543,6 +544,37 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             }
             break;
         case 2:
+            if (oVillagePtr->completed == true)
+            {
+                cout << "Ya haz alcanzado la máxima puntuación en " << oVillagePtr->name << ". Intenta visitar otra aldea" << endl;
+                break;
+            }
+
+            if (oVillagePtr->name == "Tesla")
+            {
+                if(trainee.powerLevel <= 90)
+                {
+                    cout << "No tienes el poder suficiente, aún no estas preparado para este desafio" << endl;
+                    condition = false;
+                    break;
+                }
+                for(const auto& pair : villages)
+                {
+                    const Village& village = pair.second;
+                    if (!village.completed && trainee.powerLevel <= 90)
+                    {
+                        cout << "No has visitado todas las aldeas, aún no estas preparado para este desafio" << endl;
+                        condition = false;
+                        break;
+                    }    
+                }
+            }
+            
+            if (!condition && oVillagePtr->name == "Tesla")
+            {
+                break; // Detener el case 2 si no se cumple la condición
+            }
+            
             // Lista de adversarios para entrenar en la aldea actual
             cout << "Lista de adversarios para entrenar en " << origin << ":" << endl;
 
@@ -858,4 +890,3 @@ int main()
     }
     return 0;
 }
-
