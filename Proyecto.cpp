@@ -127,8 +127,6 @@ struct Journey /*Viaje*/
     vector<TrainingSession> trainings;
 };
 
-
-
 // Función para buscar el índice de un guardián en el vector 'guardians'
 int guardianIndex(const vector<Guardian>& guardians, const string& guardianName) 
 {
@@ -445,6 +443,31 @@ bool hasVisitedAllVillages(const unordered_map<string, Village>& villages)
     return true;
 }
 
+void printTrainingHistory(const Journey& actual)
+{
+    int keyCont = 1;
+    for (const string& village : actual.visitedVillages)
+    {
+        cout << "Aldea: " << village << endl;
+        cout << "   Entrenamientos: " << endl;
+
+        // Buscar los entrenamientos realizados en todas las aldeas
+        for (const TrainingSession& training : actual.trainings)
+        {
+            if (training.key == keyCont)
+            {
+                cout << "       Rival: " << training.rival << endl;
+                cout << "       Tiro del dado: " << training.diceResult << endl;
+                cout << "       Dificultad: " << training.difficulty << endl;
+                cout << "       Resultado: " << training.result << endl;
+                cout << endl; // Espacio entre entrenamientos
+            }
+        }
+        keyCont += 1;
+        cout << endl; // Espacio entre aldeas
+    }
+}
+
 bool training(Guardian& trainee, const Guardian& adversary, int title, Journey& actual)
 {
     cout << "El entrenamiento será de " << trainee.name << " VS " << adversary.name << endl;
@@ -458,9 +481,11 @@ bool training(Guardian& trainee, const Guardian& adversary, int title, Journey& 
     // Calcula la dificultad modificada para el entrenamiento
     float adjustedDifference = static_cast<float>(powerDifference) / powerMax * (rangeUpperLimit - rangeLowerLimit);
     int difficulty;
-    if (title == 1) {
+    if (title == 1) 
+    {
         difficulty = 10 + static_cast<int>(adjustedDifference) + (adversary.powerLevel == powerMax ? 5 : 0) - (powerMax - trainee.powerLevel) / 10;
-    } else {
+    } else 
+    {
         difficulty = 5 + static_cast<int>(adjustedDifference) + (adversary.powerLevel == powerMax ? 5 : 0) - (powerMax - trainee.powerLevel) / 10;
     }
 
@@ -518,7 +543,6 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
     bool condition;
     actual.key = 1;
     actual.visitedVillages.push_back(origin);
-    int keyCont = 1; // Permite explorar el historial
 
     cout << "----- Viaje del Aprendiz -----" << endl;
     while (choice != 9)
@@ -534,6 +558,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
         cout << "1. Viajar a otra aldea" << endl;
         cout << "2. Ver lista de adversarios para entrenar" << endl;
         cout << "3. Historial de viaje" << endl;
+        cout << "4. Alquimista" << endl;
         cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
         switch (choice)
@@ -542,7 +567,6 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             if (villages.count(origin) > 0)
             {   
                 Village& originVillage = *oVillagePtr;
-                cout << "originVillage: " << originVillage.name << endl;
                 cout << "Aldeas a las que se puede viajar desde " << originVillage.name << ":" << endl;
                 for (const string& connectedVillage : originVillage.connectedVillages)
                 {
@@ -595,7 +619,6 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             }
             break;
         case 2:
-            
             if(trainee.powerLevel == 100)
             {
                 cout << "Nivel de poder máximo alcanzado" << endl;
@@ -624,6 +647,31 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             if (!condition && oVillagePtr->name == "Tesla")
             {
                 break; // Detener el case 2 si no se cumple la condición
+            }
+
+            if (condition && oVillagePtr->name == "Tesla")
+            {
+                cout << "Felicidades, estas preparado para enfrentar a Stormheart. Aquí comienza tu camino para ser un verdadero guardian" << endl;
+                cout << "Veamos como fue tu recorrido hasta este punto: " << endl;
+                cin.ignore(); // Espera a que se presione una tecla
+                printTrainingHistory(actual);
+
+                cout << "De cara al enfrentamiento final tenemos la siguiente situación: " << endl;
+                cin.ignore(); // Espera a que se presione una tecla
+                cout << "   - Maestro Stormheart de Tesla: " << masterNode->guardian.powerLevel << endl;
+                cout << "   - Tú, aprendiz " << trainee.name << " de " << trainee.village << ": " << trainee.powerLevel << endl << endl;
+                cin.ignore(); // Espera a que se presione una tecla
+                cout << "El destino ha conspirado para que te enfrentes a tu más grande desafío: el Maestro Stormheart." << endl;
+                cout << "Enfrentas al maestro en una batalla épica, donde el destino de la humanidad está en juego." << endl;
+                cout << "Ambos se preparan para la lucha, desplegando sus habilidades y poderes al máximo." << endl;
+
+                cout << "Preparado lanzas el dado que decidira tu destino y el resultado de la batalla es..." << endl;
+                cin.ignore();
+                cout << trainee.name << " regresará";
+                deleteTree(root);
+
+                exit(0); // Espera a que se presione una tecla
+                break;
             }
 
             // Lista de adversarios para entrenar en la aldea actual
@@ -671,7 +719,6 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                 }
                 else if (choiceAd == 1)
                 {
-
                     // El usuario eligió pelear contra el maestro
                     // Verificar si el maestro ya fue enfrentado previamente
                     if (find(adversariesFaced.begin(), adversariesFaced.end(), masterNode->guardian.name) != adversariesFaced.end())
@@ -734,27 +781,68 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             }    
             break;
         case 3:
-            keyCont = 1;
-            for (string village : actual.visitedVillages)
-            {
-                cout << "Aldea: " << village << endl;
-                cout << "   Entrenamientos: " << endl;
-                
-                // Buscar los entrenamientos realizados en todas las aldeas
-                for (const TrainingSession& training : actual.trainings)
+            printTrainingHistory(actual);
+            break;
+        case 4:
+            cout << "Sacrifica entre 2 y 4 puntos de poder para crear una conexión entre aldeas" << endl;
+            if (villages.count(origin) > 0)
+            {   
+                Village& originVillage = *oVillagePtr;
+                cout << "Aldeas a las que no se puede viajar desde " << originVillage.name << ":" << endl;
+                for (const auto& villagePair : villages)
                 {
-                    
-                    if (training.key == keyCont)
+                    const string& village = villagePair.first;
+                    if (find(originVillage.connectedVillages.begin(), originVillage.connectedVillages.end(), village) == originVillage.connectedVillages.end() && village != originVillage.name)
                     {
-                        cout << "       Rival: " << training.rival << endl;
-                        cout << "       Tiro del dado: " << training.diceResult << endl;
-                        cout << "       Dificultad: " << training.difficulty << endl;
-                        cout << "       Resultado: " << training.result << endl;
-                        cout << endl; // Espacio entre entrenamientos
+                        cout << "- " << village << endl;
                     }
                 }
-                keyCont+=1;
-                cout << endl; // Espacio entre aldeas
+                string destination;
+                do
+                {
+                    cout << "Ingrese el nombre de la aldea de destino ('0' para volver al menú): ";
+                    getline(cin, destination);
+
+                    if (destination == "0")
+                    {
+                        break; // Salir del do-while y del switch
+                    }
+
+                    if (villages.count(destination) > 0)
+                    {
+                         // Verificar si las aldeas ya existen en el mapa
+                        if (villages.count(origin) == 0) 
+                        {
+                            villages[origin] = Village(origin);
+                        }
+                        if (villages.count(destination) == 0) 
+                        {
+                            villages[destination] = Village(destination);
+                        }
+
+                        // Establecer conexión desde villageName a connectedVillage
+                        villages[origin].connectedVillages.push_back(destination);
+
+                        // Establecer conexión desde connectedVillage a villageName
+                        villages[destination].connectedVillages.push_back(origin);
+                        cout << "Conexión establecida" << endl;
+                        
+                        // Restar entre 2 y 4 puntos de poder al guardian
+                        int powerLoss = rand() % 3 + 2;  // Generar número aleatorio entre 2 y 4
+                        trainee.powerLevel -= powerLoss;
+                        cout << "Se han sacrificado " << powerLoss << " puntos de poder." << endl;
+                        break;
+                    }
+                    else
+                    {
+                        cout << "Aldea de destino no válida. Intente nuevamente." << endl;
+                    }
+                } while (true);
+            }
+            else
+            {
+                cout << "Aldea de origen no válida." << endl;
+                break; // Salir del switch
             }
             break;
         default:
@@ -783,7 +871,8 @@ int main()
 #pragma  region Archivos //Carga de archivos de guardianes y aldeas
 
     ifstream inputFileVillages("./Archivos/villages.txt");
-    if (!inputFileVillages) {
+    if (!inputFileVillages) 
+    {
         cout << "No se pudo abrir el archivo." << endl;
         return 1;
     }
@@ -798,10 +887,12 @@ int main()
         getline(iss, connectedVillage);
 
          // Verificar si las aldeas ya existen en el mapa
-        if (villages.count(villageName) == 0) {
+        if (villages.count(villageName) == 0) 
+        {
             villages[villageName] = Village(villageName);
         }
-        if (villages.count(connectedVillage) == 0) {
+        if (villages.count(connectedVillage) == 0) 
+        {
             villages[connectedVillage] = Village(connectedVillage);
         }
 
@@ -813,7 +904,6 @@ int main()
     }
 
     inputFileVillages.close();
-
 
     ifstream inputFile("./Archivos/guardians.txt");
     if (!inputFile) 
@@ -861,40 +951,39 @@ int main()
             guardians.push_back(guardian);
         }
     }
-
-
-
     inputFile.close();
 
-    for (auto& entry : villages) {
+    for (auto& entry : villages) 
+    {
         Village& village = entry.second;
         string& master = village.master;
         vector<Guardian>& apprentices = village.localApprentices;
 
         // Verificar si la aldea es "Tesla"
-        if (village.name == "Tesla") {
+        if (village.name == "Tesla") 
+        {
             continue; // Saltar la validación para la aldea "Tesla"
         }
 
         // Verificar si el maestro está presente en la lista de aprendices
-        auto it = find_if(apprentices.begin(), apprentices.end(), [&](const Guardian& guardian) {
+        auto it = find_if(apprentices.begin(), apprentices.end(), [&](const Guardian& guardian) 
+        {
             return guardian.name == master;
         });
 
         // Si el maestro está en la lista, eliminarlo
-        if (it != apprentices.end()) {
+        if (it != apprentices.end()) 
+        {
             apprentices.erase(it);
         }
 
         // Verificar si no hay aprendices restantes en la lista después de eliminar al maestro
-        if (apprentices.empty()) {
+        if (apprentices.empty()) 
+        {
             cout << "Error: La aldea " << village.name << " no tiene aprendices." << endl;
             return 1;
         }
     }
-
-
-
 
 #pragma endregion Archivos    
 
@@ -902,7 +991,8 @@ int main()
     printHierarchy(root);
 
     int choice = 0;
-    while (choice != 4) {
+    while (choice != 4) 
+    {
         cout << "----- Guardian's Journey -----" << endl;
         if(selectTrainee){cout << trainee.name << endl;}
         cout << "1. Crear un nuevo aprendiz" << endl;
@@ -912,7 +1002,8 @@ int main()
         cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
 
-        switch (choice) {
+        switch (choice) 
+        {
             case 1:
                 if (selectTrainee) 
                 {
@@ -958,7 +1049,6 @@ int main()
                 cout << "Elección inválida. Intente nuevamente." << endl;
                 break;
         }
-
         cout << endl;
     }
     return 0;
