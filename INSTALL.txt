@@ -32,4 +32,4 @@ Instrucciones de instalación y compilación
 6. Solución de problemas
    - Si encuentras algún problema durante la instalación o compilación, consulta la documentación o el repositorio del programa para obtener ayuda adicional.
 
-¡Listo! Ahora deberías tener el programa instalado y listo para ejecutarse en tu sistema. Siéntete libre de personalizar estas instrucciones según las necesidades y características específicas de tu programa.
+¡Listo! Ahora deberías tener el programa instalado y listo para ejecutarse en tu sistema.
