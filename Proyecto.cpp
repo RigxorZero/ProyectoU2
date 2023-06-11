@@ -100,6 +100,35 @@ struct Village
     }
 };
 
+struct TrainingSession
+{
+    int key;
+    string rival;
+    int diceResult;
+    int difficulty;
+    string result;
+
+    TrainingSession(){} // Constructor predeterminado sin argumentos
+
+    TrainingSession(int Key, string Rival, int Dice, int Difficulty, string Result)
+    {
+        key = Key;
+        rival = Rival;
+        diceResult = Dice;
+        difficulty = Difficulty;
+        result = Result;
+    }
+};
+
+struct Journey /*Viaje*/
+{
+    int key;
+    vector<string> visitedVillages; // Aldeas visitadas en orden
+    vector<TrainingSession> trainings;
+};
+
+
+
 // Función para buscar el índice de un guardián en el vector 'guardians'
 int guardianIndex(const vector<Guardian>& guardians, const string& guardianName) 
 {
@@ -416,7 +445,7 @@ bool hasVisitedAllVillages(const unordered_map<string, Village>& villages)
     return true;
 }
 
-bool training(Guardian& trainee, const Guardian& adversary, int title)
+bool training(Guardian& trainee, const Guardian& adversary, int title, Journey& actual)
 {
     cout << "El entrenamiento será de " << trainee.name << " VS " << adversary.name << endl;
     const int powerMax = 100;
@@ -444,6 +473,9 @@ bool training(Guardian& trainee, const Guardian& adversary, int title)
     // Imprime el resultado
     cout << "Resultado del dado: " << diceResult << endl;
     cout << "Dificultad del entrenamiento: " << difficulty << endl;
+
+    TrainingSession actualTraining(actual.key, adversary.name, diceResult, difficulty, isSuccess?"Superado":"No superado");
+    actual.trainings.push_back(actualTraining);
     return isSuccess;
 }
 
@@ -474,7 +506,7 @@ void travel(const string& origin, const string& destination, const unordered_map
 
 void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, GuardianNode* root)
 {
-    
+    Journey actual;
     string origin = trainee.village;
     Village* oVillagePtr = &villages.at(origin);
     oVillagePtr->visited = true;
@@ -484,6 +516,9 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
     bool resultTraining;
     vector<string> adversariesFaced; // Lista temporal para almacenar los adversarios ya enfrentados
     bool condition;
+    actual.key = 1;
+    actual.visitedVillages.push_back(origin);
+    int keyCont = 1; // Permite explorar el historial
 
     cout << "----- Viaje del Aprendiz -----" << endl;
     while (choice != 9)
@@ -498,6 +533,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
         cout << "Aldea actual: " << origin << endl << endl;
         cout << "1. Viajar a otra aldea" << endl;
         cout << "2. Ver lista de adversarios para entrenar" << endl;
+        cout << "3. Historial de viaje" << endl;
         cout << "Ingrese su elección: ";
         choice = validarEntradaEntera();
         switch (choice)
@@ -541,6 +577,8 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                             oVillagePtr->visited = true;
                             masterNode = findNode(root, oVillagePtr->master);
                             adversariesFaced.clear();
+                            actual.visitedVillages.push_back(origin);
+                            actual.key += 1;
                             break; // Salir del do-while
                         }
                         else
@@ -557,6 +595,13 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
             }
             break;
         case 2:
+            
+            if(trainee.powerLevel == 100)
+            {
+                cout << "Nivel de poder máximo alcanzado" << endl;
+                break;
+            }
+
             if (oVillagePtr->completed == true)
             {
                 cout << "Ya haz alcanzado la máxima puntuación en " << oVillagePtr->name << ". Intenta visitar otra aldea" << endl;
@@ -635,7 +680,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                         break;
                     }
 
-                    bool resultTraining = training(trainee, masterNode->guardian, 1);
+                    bool resultTraining = training(trainee, masterNode->guardian, 1, actual);
                     if (resultTraining)
                     {
                         
@@ -667,7 +712,7 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                         break;
                     }
 
-                    resultTraining = training(trainee, selectedApprentice, 2);
+                    resultTraining = training(trainee, selectedApprentice, 2, actual);
                     if (resultTraining)
                     {
                         if (villagesPoints < 4)
@@ -688,6 +733,30 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
                 break;
             }    
             break;
+        case 3:
+            keyCont = 1;
+            for (string village : actual.visitedVillages)
+            {
+                cout << "Aldea: " << village << endl;
+                cout << "   Entrenamientos: " << endl;
+                
+                // Buscar los entrenamientos realizados en todas las aldeas
+                for (const TrainingSession& training : actual.trainings)
+                {
+                    
+                    if (training.key == keyCont)
+                    {
+                        cout << "       Rival: " << training.rival << endl;
+                        cout << "       Tiro del dado: " << training.diceResult << endl;
+                        cout << "       Dificultad: " << training.difficulty << endl;
+                        cout << "       Resultado: " << training.result << endl;
+                        cout << endl; // Espacio entre entrenamientos
+                    }
+                }
+                keyCont+=1;
+                cout << endl; // Espacio entre aldeas
+            }
+            break;
         default:
             cout << "Elección inválida. Intente nuevamente." << endl;
             break;
@@ -696,8 +765,6 @@ void travelMenu(unordered_map<string, Village>& villages, Guardian& trainee, Gua
         cout << endl;
     }
 }
-
-
 
 // Función comparadora para ordenar guardianes por powerLevel de forma descendente
 bool compareGuardiansByPowerLevel(const Guardian& a, const Guardian& b)
